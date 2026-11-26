@@ -132,3 +132,45 @@ export const updateProduct = async (req, res) => {
     });
   }
 };
+
+// Eliminar un producto existente
+export const deleteProduct = async (req, res) => {
+  try {
+    // Obtener el ID desde la URL
+    const id = Number(req.params.id);
+
+    // Validar el identificador
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "ID de producto inválido"
+      });
+    }
+
+    // Eliminar el producto de PostgreSQL
+    const products = await sql`
+      DELETE FROM products
+      WHERE id = ${id}
+      RETURNING id
+    `;
+
+    // Verificar si el producto existía
+    if (products.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Producto no encontrado"
+      });
+    }
+
+    // Eliminación exitosa
+    return res.status(204).send();
+
+  } catch (error) {
+    console.error("Error al eliminar producto:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Error interno del servidor"
+    });
+  }
+};

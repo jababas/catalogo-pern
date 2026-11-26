@@ -3,7 +3,8 @@ import { Router } from "express";
 import {
   getProducts,
   createProduct,
-  updateProduct
+  updateProduct,
+  deleteProduct
 } from "../controllers/products.controller.js";
 
 const router = Router();
@@ -16,5 +17,8 @@ router.post("/", createProduct);
 
 // Editar producto
 router.put("/:id", updateProduct);
+
+// Eliminar producto
+router.delete("/:id", deleteProduct);
 
 export default router;
