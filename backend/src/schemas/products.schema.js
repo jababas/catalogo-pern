@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Validaciones para registrar productos
 export const createProductSchema = z.object({
   name: z.string()
     .trim()
@@ -12,3 +13,6 @@ export const createProductSchema = z.object({
 
   image: z.url("Debe proporcionar una URL válida")
 });
+
+// Validaciones para actualizar productos
+export const updateProductSchema = createProductSchema;
