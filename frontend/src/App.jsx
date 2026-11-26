@@ -18,6 +18,8 @@ export default function App() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const [editingId, setEditingId] = useState(null);
+
   // Consultar productos
   const loadProducts = async () => {
     try {
@@ -36,46 +38,85 @@ export default function App() {
     loadProducts();
   }, []);
 
+
+  const handleEdit = (product) => {
+  setEditingId(product.id);
+
+  setName(product.name);
+  setPrice(String(product.price));
+  setImage(product.image);
+
+  setMessage("");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+};
+
+
+const handleCancel = () => {
+  setEditingId(null);
+
+  setName("");
+  setPrice("");
+  setImage("");
+
+  setMessage("");
+};
+
+
   // Registrar un producto
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setMessage("");
-    setSaving(true);
+  setMessage("");
+  setSaving(true);
 
-    try {
-      const newProduct = {
-        name: name.trim(),
-        price: Number(price),
-        image: image.trim()
-      };
+  try {
+    const productData = {
+      name: name.trim(),
+      price: Number(price),
+      image: image.trim()
+    };
 
-      await api.post("/products", newProduct);
+    if (editingId !== null) {
+      // Actualizar producto existente
+      await api.put(`/products/${editingId}`, productData);
+
+      setMessage("Producto actualizado correctamente");
+    } else {
+      // Registrar producto nuevo
+      await api.post("/products", productData);
 
       setMessage("Producto registrado correctamente");
-
-      // Limpiar formulario
-      setName("");
-      setPrice("");
-      setImage("");
-
-      // Actualizar catálogo
-      await loadProducts();
-
-    } catch (error) {
-      const message = error.response?.data?.message;
-
-      setMessage(message || "No se pudo registrar el producto");
-    } finally {
-      setSaving(false);
     }
-  };
+
+    // Limpiar formulario
+    setEditingId(null);
+    setName("");
+    setPrice("");
+    setImage("");
+
+    // Actualizar el catálogo
+    await loadProducts();
+
+  } catch (error) {
+    const message = error.response?.data?.message;
+
+    setMessage(message || "No se pudo guardar el producto");
+  } finally {
+    setSaving(false);
+  }
+};
+
+
 
   return (
     <main style={{ padding: 20 }}>
       <h1>Catálogo de productos</h1>
 
-      <h2>Registrar producto</h2>
+      <h2> {editingId !== null ? "Editar producto" : "Registrar producto"} </h2>
 
       <form
         onSubmit={handleSubmit}
@@ -115,8 +156,25 @@ export default function App() {
         />
 
         <button type="submit" disabled={saving}>
-          {saving ? "Guardando..." : "Registrar producto"}
+  {saving
+    ? "Guardando..."
+    : editingId !== null
+      ? "Guardar cambios"
+      : "Registrar producto"}
         </button>
+
+        {editingId !== null && (
+        
+        
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={saving}
+        >
+          Cancelar edición
+        </button>
+)}
+
       </form>
 
       {message && <p>{message}</p>}
@@ -158,6 +216,14 @@ export default function App() {
               <p>
                 ${Number(product.price).toFixed(2)}
               </p>
+
+              <button
+                type="button"
+                onClick={() => handleEdit(product)}
+              >
+                Editar
+              </button>
+              
             </article>
           ))}
         </div>
