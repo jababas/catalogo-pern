@@ -65,6 +65,29 @@ const handleCancel = () => {
   setMessage("");
 };
 
+// Eliminar un producto
+  const handleDelete = async (product) => {
+  const confirmDelete = window.confirm(
+    `¿Estás seguro de eliminar "${product.name}"?`
+  );
+
+  if (!confirmDelete) {
+    return;
+  }
+
+  try {
+    await api.delete(`/products/${product.id}`);
+
+    setMessage("Producto eliminado correctamente");
+
+    await loadProducts();
+
+  } catch (error) {
+    const message = error.response?.data?.message;
+
+    setMessage(message || "No se pudo eliminar el producto");
+  }
+};
 
   // Registrar un producto
   const handleSubmit = async (e) => {
@@ -224,6 +247,17 @@ const handleCancel = () => {
                 Editar
               </button>
               
+              <button
+                type="button"
+                onClick={() => handleDelete(product)}
+                style={{
+                  marginLeft: 10,
+                  backgroundColor: "#dc3545",
+                  color: "white"
+                }}
+              >
+                Eliminar
+              </button>
             </article>
           ))}
         </div>
